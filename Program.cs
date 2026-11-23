@@ -1,5 +1,7 @@
 using ECommerce.Data;
 using Microsoft.EntityFrameworkCore;
+using ECommerce.Models;
+using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +15,30 @@ var connectionString = builder.Configuration
 // Đăng ký DbContext và SQL Server
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
+
+// Đăng ký ASP.NET Core Identity
+builder.Services
+    .AddIdentity<ApplicationUser, IdentityRole>(options =>
+    {
+        // Cấu hình mật khẩu
+        options.Password.RequiredLength = 8;
+        options.Password.RequireDigit = true;
+        options.Password.RequireUppercase = true;
+        options.Password.RequireLowercase = true;
+        options.Password.RequireNonAlphanumeric = false;
+
+        // Cấu hình email
+        options.User.RequireUniqueEmail = true;
+    })
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
+
+// Cấu hình Cookie đăng nhập
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Account/Login";
+    options.AccessDeniedPath = "/Account/AccessDenied";
+});
 
 var app = builder.Build();
 
